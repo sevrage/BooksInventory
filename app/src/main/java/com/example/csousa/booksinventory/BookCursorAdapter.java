@@ -22,8 +22,6 @@ public class BookCursorAdapter extends CursorAdapter {
        @BindView(R.id.genre) TextView genreTextView;
        @BindView(R.id.price) TextView priceTextView;
        @BindView(R.id.quantity) TextView qtyTextView;
-       //@BindView(R.id.edit_supplier_name) TextView supplierNameTextView;
-       //@BindView(R.id.edit_supplier_phone) TextView supplierPhoneTextView;
        @BindView(R.id.sale_btn) Button sellButton;
 
        public ViewHolder(View view) {
@@ -44,16 +42,6 @@ public class BookCursorAdapter extends CursorAdapter {
         return view;
     }
 
-    /**
-     * This method binds the pet data (in the current row pointed to by cursor) to the given
-     * list item layout. For example, the name for the current pet can be set on the name TextView
-     * in the list item layout.
-     *
-     * @param view    Existing view, returned earlier by newView() method
-     * @param context app context
-     * @param cursor  The cursor from which to get the data. The cursor is already moved to the
-     *                correct row.
-     */
     @Override
     public void bindView(View view, final Context context, final Cursor cursor) {
 
@@ -96,9 +84,6 @@ public class BookCursorAdapter extends CursorAdapter {
 
        holder.priceTextView.setText(priceValue);
        holder.qtyTextView.setText(qtyValue);
-
-       //holder.supplierNameTextView.setText(supName);
-       //holder.supplierPhoneTextView.setText(supPhone);
 
        final int position = cursor.getPosition();
 

@@ -19,7 +19,7 @@ public class BookProvider extends ContentProvider {
     /** URI matcher code for the content URI for the books table */
     private static final int BOOKS = 100;
 
-    /** URI matcher code for the content URI for a single pet in the books table */
+    /** URI matcher code for the content URI for a single book in the books table */
     private static final int BOOK_ID = 101;
 
     /**
@@ -141,7 +141,7 @@ public class BookProvider extends ContentProvider {
         // Get writeable database
         SQLiteDatabase database = mDbHelper.getWritableDatabase();
 
-        // Insert the new pet with the given values
+        // Insert the new book with the given values
         long id = database.insert(BookEntry.TABLE_NAME, null, values);
         // If the ID is -1, then the insertion failed. Log an error and return null.
         if (id == -1) {
