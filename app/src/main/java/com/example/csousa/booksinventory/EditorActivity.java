@@ -3,6 +3,7 @@ package com.example.csousa.booksinventory;
 import android.app.AlertDialog;
 import android.app.LoaderManager;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.CursorLoader;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -147,7 +148,7 @@ public class EditorActivity extends AppCompatActivity implements
     /**
      * Get user input from editor and save book into database.
      */
-    private void saveBook() {
+    private boolean saveBook(boolean questionAllowZeroValue) {
         // Read from input fields
         // Use trim to eliminate leading or trailing white space
         String nameStr = mNameEditText.getText().toString().trim();
@@ -164,7 +165,42 @@ public class EditorActivity extends AppCompatActivity implements
                 TextUtils.isEmpty(supplierPhoneStr) && mGenre == BookEntry.GENRE_UNKNOWN) {
             // Since no fields were modified, we can return early without creating a new book.
             // No need to create ContentValues and no need to do any ContentProvider operations.
-            return;
+            Toast.makeText(this, R.string.no_change, Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        if (isNullOrBlank(nameStr))
+        {
+            Toast.makeText(this, R.string.book_empty_msg, Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        if (isNullOrBlank(supplierNameStr))
+        {
+            Toast.makeText(this, R.string.supplier_empty_msg, Toast.LENGTH_SHORT).show();
+            return false;
+        }
+        if (isNullOrBlank(supplierPhoneStr))
+        {
+            Toast.makeText(this, R.string.supplier_phone_empty_msg, Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        if (questionAllowZeroValue){
+            if ((isNullOrBlank(priceStr) || priceStr.toString().trim().equals("0")) && (isNullOrBlank(quantityStr) || quantityStr.toString().trim().equals("0"))){
+                showAllowZeroValueConfirmationDialog(getString(R.string.allow_all_empty_question));
+                return false;
+            }else{
+                if (isNullOrBlank(priceStr) || priceStr.toString().trim().equals("0"))
+                {
+                    showAllowZeroValueConfirmationDialog(getString(R.string.allow_price_empty_question));
+                    return false;
+                }
+                if (isNullOrBlank(quantityStr) || quantityStr.toString().trim().equals("0"))
+                {
+                    showAllowZeroValueConfirmationDialog(getString(R.string.allow_quantity_empty_question));
+                    return false;
+                }
+            }
         }
 
         // Create a ContentValues object where column names are the keys,
@@ -201,6 +237,7 @@ public class EditorActivity extends AppCompatActivity implements
                 // If the new content URI is null, then there was an error with insertion.
                 Toast.makeText(this, R.string.editor_add_book_error,
                         Toast.LENGTH_SHORT).show();
+                return false;
             } else {
                 // Otherwise, the insertion was successful and we can display a toast.
                 Toast.makeText(this, R.string.editor_add_book_ok,
@@ -218,12 +255,15 @@ public class EditorActivity extends AppCompatActivity implements
                 // If no rows were affected, then there was an error with the update.
                 Toast.makeText(this, R.string.editor_update_book_error,
                         Toast.LENGTH_SHORT).show();
+                return false;
             } else {
                 // Otherwise, the update was successful and we can display a toast.
                 Toast.makeText(this, R.string.editor_update_book_ok,
                         Toast.LENGTH_SHORT).show();
             }
         }
+
+        return true;
     }
 
     @Override
@@ -256,10 +296,14 @@ public class EditorActivity extends AppCompatActivity implements
             // Respond to a click on the "Save" menu option
             case R.id.action_save:
                 // Save book to database
-                saveBook();
-                // Exit activity
-                finish();
-                return true;
+                if (saveBook(true)) {
+                    // Exit activity
+                    finish();
+                    return true;
+                } else {
+                    return false;
+                }
+
             // Respond to a click on the "Delete" menu option
             case R.id.action_delete:
                 // Pop up confirmation dialog for deletion
@@ -268,7 +312,7 @@ public class EditorActivity extends AppCompatActivity implements
             // Respond to a click on the "Up" arrow button in the app bar
             case android.R.id.home:
                 // If the book hasn't changed, continue with navigating up to parent activity
-                // which is the {@link CatalogActivity}.
+                // which is the {@link InventoryActivity}.
                 if (!mBookHasChanged) {
                     NavUtils.navigateUpFromSameTask(EditorActivity.this);
                     return true;
@@ -413,7 +457,7 @@ public class EditorActivity extends AppCompatActivity implements
     private void showUnsavedChangesDialog(
             DialogInterface.OnClickListener discardButtonClickListener) {
         // Create an AlertDialog.Builder and set the message, and click listeners
-        // for the postivie and negative buttons on the dialog.
+        // for the positive and negative buttons on the dialog.
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage(R.string.question_discard_book_changes);
         builder.setPositiveButton(R.string.discard, discardButtonClickListener);
@@ -437,7 +481,7 @@ public class EditorActivity extends AppCompatActivity implements
      */
     private void showDeleteConfirmationDialog() {
         // Create an AlertDialog.Builder and set the message, and click listeners
-        // for the postivie and negative buttons on the dialog.
+        // for the positive and negative buttons on the dialog.
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage(R.string.question_delete_book);
         builder.setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() {
@@ -447,6 +491,39 @@ public class EditorActivity extends AppCompatActivity implements
             }
         });
         builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User clicked the "Cancel" button, so dismiss the dialog
+                // and continue editing the book.
+                if (dialog != null) {
+                    dialog.dismiss();
+                }
+            }
+        });
+
+        // Create and show the AlertDialog
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+
+    /**
+     * Prompt the user to confirm that they want to delete this book.
+     */
+    private void showAllowZeroValueConfirmationDialog(String question) {
+        // Create an AlertDialog.Builder and set the message, and click listeners
+        // for the positive and negative buttons on the dialog.
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(question);
+        builder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User clicked the "Delete" button, so delete the book.
+                saveBook(false);
+                //override all and exit
+                mBookHasChanged = true;
+                finish();
+                NavUtils.navigateUpFromSameTask(EditorActivity.this);
+            }
+        });
+        builder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 // User clicked the "Cancel" button, so dismiss the dialog
                 // and continue editing the book.
@@ -506,7 +583,6 @@ public class EditorActivity extends AppCompatActivity implements
             quantity = Integer.parseInt(quantityStr) + 1;
         }
         mQuantityEditText.setText(Integer.toString(quantity));
-
     }
 
     public void removeBook(View v) {
@@ -523,6 +599,11 @@ public class EditorActivity extends AppCompatActivity implements
         Intent intent = new Intent(Intent.ACTION_DIAL);
         intent.setData(Uri.parse("tel:" + supPhone));
         startActivity(intent);
+    }
+
+    private static boolean isNullOrBlank(String s)
+    {
+        return (s==null || s.trim().equals(""));
     }
 
 }

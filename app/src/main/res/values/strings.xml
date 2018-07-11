@@ -36,4 +36,15 @@
     <string name="supplier_phone">Supplier phone</string>
     <string name="book_not_on_stock">Book is not on stock!</string>
     <string name="supplier_no_contact">Supplier has no contact!</string>
+    <string name="no_change">No changes detected!</string>
+    <string name="ok">OK</string>
+    <string name="no">No</string>
+    <string name="yes">Yes</string>
+    <string name="continue_question">Do you want to continue?</string>
+    <string name="book_empty_msg">Book name field is empty!</string>
+    <string name="supplier_empty_msg">Supplier field is empty!</string>
+    <string name="supplier_phone_empty_msg">Supplier phone field is empty!</string>
+    <string name="allow_all_empty_question">Allow Price and Quantity fields to have 0 as value?</string>
+    <string name="allow_price_empty_question">Allow Price field to have 0 as value?</string>
+    <string name="allow_quantity_empty_question">Allow Quantity field to have 0 as value?</string>
 </resources>
